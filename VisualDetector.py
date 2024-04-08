@@ -8,7 +8,6 @@ from PIL import Image, ImageTk
 from functools import partial
 import math
 import os
-# Comment change
 
 def thresh_callback_tester(lengthLimit):
     window = tk.Tk()
