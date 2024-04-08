@@ -9,7 +9,35 @@ from functools import partial
 import math
 import os
 
-def thresh_callback_tester(lengthLimit):
+def get_scale():
+    window = tk.Tk()
+    window.state('zoomed')
+    window.title('Scale Bar Value')
+    title_label = ttk.Label(master=window, text='Scale Bar Value', font='Calibri 24')
+    title_label.pack()
+
+    scaleBarValueTK = tk.IntVar()
+    scaleBarValueTK.set(500)
+    polyFrame = ttk.Frame(master=window)
+    aFrame = ttk.Frame()
+    panel = tk.Label(master=aFrame)
+    nextLabel = ttk.Label(master=polyFrame, text='Enter integer value for length of scale bar:')
+    scaleEntry = ttk.Entry(master=polyFrame, textvariable=scaleBarValueTK)
+    button1 = ttk.Button(master=polyFrame, text='All Set!', command=window.destroy)
+
+    polyFrame.pack()
+    nextLabel.pack()
+    scaleEntry.pack()
+    button1.pack()
+    aFrame.pack()
+    panel.pack()
+
+    window.mainloop()
+
+    return scaleBarValueTK.get()
+
+
+def thresh_callback_tester(lengthLimit, scaleBarValue):
     window = tk.Tk()
     window.state('zoomed')
     window.title('Threshold Tester')
@@ -21,11 +49,13 @@ def thresh_callback_tester(lengthLimit):
     polyFrame = ttk.Frame(master=window)
     aFrame = ttk.Frame()
     panel = tk.Label(master=aFrame)
+    polyTitle = ttk.Label(master = polyFrame, text = 'Threshold Value:')
     polyEntry = ttk.Entry(master=polyFrame, textvariable= thresholdValue)
-    polyButton = ttk.Button(master=polyFrame, text='Test', command= partial(thresh_callback_tester_helper, lengthLimit, window, panel, thresholdValue))
+    polyButton = ttk.Button(master=polyFrame, text='Test', command= partial(thresh_callback_tester_helper, lengthLimit, window, panel, thresholdValue, scaleBarValue))
     button1 = ttk.Button(master = polyFrame, text = 'Looks good, Continue!', command = window.destroy)
 
     polyFrame.pack()
+    polyTitle.pack()
     polyEntry.pack()
     polyButton.pack()
     button1.pack()
@@ -37,7 +67,7 @@ def thresh_callback_tester(lengthLimit):
     return thresholdValue.get()
 
 
-def thresh_callback_tester_helper(lengthLimit, window, panel, thresholdValue):
+def thresh_callback_tester_helper(lengthLimit, window, panel, thresholdValue, scaleBarValue):
     src_tester = cv.imread(cv.samples.findFile(args.input))
     threshold = thresholdValue.get()
     canny_output = cv.Canny(src_gray, threshold, threshold * 2)
@@ -60,10 +90,10 @@ def thresh_callback_tester_helper(lengthLimit, window, panel, thresholdValue):
             replacement.append(c)
     contours = replacement
     drawing = np.zeros((canny_output.shape[0], canny_output.shape[1], 3), dtype=np.uint8)
-    draw_on_Image_Tester(contours, drawing, boundRect, window, panel, src_tester)
+    draw_on_Image_Tester(contours, drawing, boundRect, window, panel, src_tester, scaleBarValue)
 
 
-def draw_on_Image_Tester(contours, drawing, boundRect, window, panel, src_tester):
+def draw_on_Image_Tester(contours, drawing, boundRect, window, panel, src_tester, scaleBarValue):
     global pixel_length
 
     for i in range(len(contours)):
@@ -76,7 +106,7 @@ def draw_on_Image_Tester(contours, drawing, boundRect, window, panel, src_tester
     for i in range(len(boundRect)):
         if i == 0:
             horz = int(boundRect[i][2])
-            pixel_length = 500/horz
+            pixel_length = scaleBarValue/horz
         # Draw bounding box
         cv.rectangle(src_tester, (int(boundRect[i][0]), int(boundRect[i][1])), \
           (int(boundRect[i][0]+boundRect[i][2]), int(boundRect[i][1]+boundRect[i][3])), (255, 255, 255), 2)
@@ -440,7 +470,8 @@ cv.namedWindow(source_window, cv.WINDOW_NORMAL)
 cv.imshow(source_window, src)
 cv.waitKey()
 lengthLimit = 35 # Filter length
-thresh = thresh_callback_tester(lengthLimit)
+scaleBarValue = get_scale()
+thresh = thresh_callback_tester(lengthLimit, scaleBarValue)
 print(f'Threshold: {thresh}')
 # cv.createTrackbar('Threshold for Dark/Light:', source_window, thresh, max_thresh, thresh_callback)
 thresh_callback(thresh)
