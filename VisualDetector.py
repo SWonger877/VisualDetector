@@ -174,7 +174,7 @@ def thresh_callback(thres):
 
     TOTALFOLD = tk.StringVar()
 
-    TOTALFOLD.set(f'TOTAL FOLDED: {str(sum(folded.values()))} \nTOTAL INDIVIDUAL: {sum(individual.values())}\nTOTAL OPEN: {sum(openCounter.values())}\nTOTAL MER: {sum([len(i) for i in allPolyLen.values()])}')
+    TOTALFOLD.set(f'TOTAL FOLDED: {str(sum(folded.values()))} \nTOTAL INDIVIDUAL: {sum(individual.values())}\nTOTAL OPEN: {sum(openCounter.values())}\nTOTAL MER: {sum([sum(i) for i in allPolyLen.values()])}')
 
     title_label = ttk.Label(master=window, text='FINAL OUTPUT', font='Calibri 24')
     title_label.pack()
@@ -195,7 +195,7 @@ def thresh_callback(thres):
     print(f'TOTAL Folded: {sum(folded.values())}')
     print(f'TOTAL Unfolded: {sum(individual.values())}')
     print(f'TOTAL Open : {sum(openCounter.values())}')
-    print(f'TOTAL -mer: {sum([len(i) for i in allPolyLen.values()])}')
+    print(f'TOTAL -mer: {sum([sum(i) for i in allPolyLen.values()])}')
 
 
 def drawOnImage(contours, drawing, boundRect, folded, individual, openCounter, allPolyLen, boxesToDelete):
@@ -263,6 +263,7 @@ def imageCrop(contours, drawing, boundRect, folded, individual, allpolyLen, open
         openInt = tk.IntVar()
         polyInt = tk.IntVar()
         merVar = tk.StringVar()
+        merVar.set('1')
         polyLen = []
         delFlagBool = [False] # Wrap in a list to force pass-by-reference
 
@@ -343,7 +344,7 @@ def next(folded, individual, openCounter, allpolyLen, boxesToDelete, delFlagBool
     print(f'Updated Folded: {sum(folded.values())}')
     print(f'Updated Unfolded: {sum(individual.values())}')
     print(f'Updated Open : {sum(openCounter.values())}')
-    print(f'Updated -mer: {sum([len(i) for i in allpolyLen.values()])}')
+    print(f'Updated -mer: {sum([sum(i) for i in allpolyLen.values()])}')
     print(f'Boxes to Delete: {boxesToDelete}')
 
     window.destroy()
@@ -360,9 +361,9 @@ def count(iterable, output, name):
 
 
 def polyLister(allList, polyInt, merVar, outLenArray, outLengths):
-    allList.append(merVar.get())
+    allList.append(int(merVar.get()))
     try:
-        polyInt.set(polyInt.get() + 1)
+        polyInt.set(polyInt.get() + int(merVar.get()))
     except:
         pass
     outLengths.set(f'Number of -mers: {polyInt.get()}')
@@ -428,10 +429,9 @@ def resetBox(polyLen, polyInt, merVar, outLengthArray, outLengths, unfoldInt, ou
     # In hindsight, could have put all into an array then just for loop through w/ some if statements
     # to make it more general and efficient as well, maybe using a list wrapper around variables to force pass by reference
     # too. Oh well.
-    for i in polyLen:
-        polyLen.remove(i)
+    polyLen.clear()
     polyInt.set(0)
-    merVar.set('')
+    merVar.set('1')
     outLengthArray.set('')
     outLengths.set('')
     unfoldInt.set(0)
@@ -469,7 +469,7 @@ source_window = 'Source'
 cv.namedWindow(source_window, cv.WINDOW_NORMAL)
 cv.imshow(source_window, src)
 cv.waitKey()
-lengthLimit = 35 # Filter length
+lengthLimit = 30 # Filter length
 scaleBarValue = get_scale()
 thresh = thresh_callback_tester(lengthLimit, scaleBarValue)
 print(f'Threshold: {thresh}')
