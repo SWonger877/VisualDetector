@@ -162,7 +162,8 @@ def thresh_callback(thres):
     openCounter = dict()
     allPolyLen = dict()
     boxesToDelete = list()
-    imageCrop(contours, drawing, boundRect, folded, individual, allPolyLen, openCounter, boxesToDelete)
+    start_for_back = 0
+    imageCrop(contours, drawing, boundRect, folded, individual, allPolyLen, openCounter, boxesToDelete, start_for_back)
 
     # Draw on Final Output Image
     drawOnImage(contours, drawing, boundRect, folded, individual, openCounter, allPolyLen, boxesToDelete)
@@ -233,8 +234,8 @@ def drawOnImage(contours, drawing, boundRect, folded, individual, openCounter, a
           (int(boundRect[i][0]+boundRect[i][2]), int(boundRect[i][1]+boundRect[i][3])), color, 2)
 
 
-def imageCrop(contours, drawing, boundRect, folded, individual, allpolyLen, openCounter, boxesToDelete):
-    for i in range(len(boundRect)):
+def imageCrop(contours, drawing, boundRect, folded, individual, allpolyLen, openCounter, boxesToDelete, start_for_back):
+    for i in range(start_for_back, len(boundRect)):
         y, h, x, w = int(boundRect[i][1]) - 100, int(boundRect[i][3]) + 200, int(boundRect[i][0]) - 100, int(boundRect[i][2]) + 200
         if y < 0:
             y = 0
@@ -289,6 +290,7 @@ def imageCrop(contours, drawing, boundRect, folded, individual, allpolyLen, open
         polyEntry = ttk.Entry(master = polyFrame, textvariable=merVar)
         polyButton = ttk.Button(master = polyFrame, text = 'Add #-mer', command = partial(polyLister, polyLen, polyInt, merVar, outLengthArray, outLengths))
         badButton = ttk.Button(master = foldedFrame, text = 'Delete this bounding box', command = partial(deleteBox, delFlag, delFlagBool))
+        backButton = ttk.Button(master = polyFrame, text = 'Back', command = partial(back, folded, individual, openCounter, allpolyLen, boxesToDelete, i, window, drawing, boundRect))
         resetButton =  ttk.Button(master = polyFrame, text = 'Reset', command = partial(resetBox, polyLen, polyInt, merVar, outLengthArray, outLengths, unfoldInt, outunFold, openInt, outOpen, foldInt, outFold, delFlagBool, delFlag))
         nextButton = ttk.Button(master = polyFrame, text = 'Next', command = partial(next, folded, individual, openCounter, allpolyLen, boxesToDelete, delFlagBool, foldInt, unfoldInt, openInt, polyLen, i, window))
 
@@ -301,6 +303,7 @@ def imageCrop(contours, drawing, boundRect, folded, individual, allpolyLen, open
         badButton.pack()
         foldedFrame.pack()
         polyFrame.pack()
+        backButton.pack()
         resetButton.pack()
         nextButton.pack(side = 'right')
 
@@ -330,6 +333,113 @@ def imageCrop(contours, drawing, boundRect, folded, individual, allpolyLen, open
         image_label.pack()
         # Run Window
         window.mainloop()
+
+
+def imageCropBACK(drawing, boundRect, folded, individual, allpolyLen, openCounter, boxesToDelete, start_for_back, ending):
+    for i in range(start_for_back, ending):
+        y, h, x, w = int(boundRect[i][1]) - 100, int(boundRect[i][3]) + 200, int(boundRect[i][0]) - 100, int(boundRect[i][2]) + 200
+        if y < 0:
+            y = 0
+        if x < 0:
+            x = 0
+        if y + h > len(drawing[:,1]):
+            h = len(drawing[:,1]) - y
+        if x + w > len(drawing[1,:]):
+            w = len(drawing[1,:]) - x
+
+
+        src_copy = cv.imread(cv.samples.findFile(args.input))
+        cv.rectangle(src_copy, (int(boundRect[i][0]), int(boundRect[i][1])),
+                     (int(boundRect[i][0] + boundRect[i][2]), int(boundRect[i][1] + boundRect[i][3])), (255, 255, 255), 1)
+        crop_img = src_copy[y:y + h, x:x + w]
+        crop_img = image_resize(crop_img, height=650)
+
+
+        # Tkinter Window
+        window = tk.Tk()
+        window.state('zoomed')
+        window.title('Cropped Image')
+
+        foldInt = tk.IntVar()
+        unfoldInt = tk.IntVar()
+        openInt = tk.IntVar()
+        polyInt = tk.IntVar()
+        merVar = tk.StringVar()
+        merVar.set('1')
+        polyLen = []
+        delFlagBool = [False] # Wrap in a list to force pass-by-reference
+
+        outFold = tk.StringVar()
+        outunFold = tk.StringVar()
+        outOpen = tk.StringVar()
+        outLengths = tk.StringVar()
+        outLengthArray = tk.StringVar()
+        delFlag = tk.StringVar()
+        boundingBoxSize = tk.StringVar()
+        boundingBoxSize.set(f'WIDTH: {boundRect[i][2]*(pixel_length):.2f}\t\t HEIGHT: {boundRect[i][3]*(pixel_length):.2f}\t\t DIAGONAL: {math.sqrt((boundRect[i][2]*(pixel_length))**2 + (boundRect[i][3]*(pixel_length))**2):.2f}')
+
+        # Title
+        title_label = ttk.Label(master = window, text = 'Cropped Section', font = 'Calibri 24')
+        title_label.pack()
+
+        # Inputs
+        foldedFrame = ttk.Frame(master = window)
+        foldButton = ttk.Button(master = foldedFrame, text = 'Add Closed', command = partial(count, foldInt, outFold, 'Closed Count: '))
+        unfoldButton = ttk.Button(master = foldedFrame, text = 'Add Individual', command = partial(count, unfoldInt, outunFold, 'Individual Count: '))
+        openButton = ttk.Button(master = foldedFrame, text = 'Add Open', command = partial(count, openInt, outOpen, 'Open Count: '))
+        polyFrame = ttk.Frame(master = window)
+        polyEntry = ttk.Entry(master = polyFrame, textvariable=merVar)
+        polyButton = ttk.Button(master = polyFrame, text = 'Add #-mer', command = partial(polyLister, polyLen, polyInt, merVar, outLengthArray, outLengths))
+        badButton = ttk.Button(master = foldedFrame, text = 'Delete this bounding box', command = partial(deleteBox, delFlag, delFlagBool))
+        backButton = ttk.Button(master = polyFrame, text = 'Back', command = partial(back, folded, individual, openCounter, allpolyLen, boxesToDelete, i, window, drawing, boundRect))
+        resetButton =  ttk.Button(master = polyFrame, text = 'Reset', command = partial(resetBox, polyLen, polyInt, merVar, outLengthArray, outLengths, unfoldInt, outunFold, openInt, outOpen, foldInt, outFold, delFlagBool, delFlag))
+        nextButton = ttk.Button(master = polyFrame, text = 'Next', command = partial(next, folded, individual, openCounter, allpolyLen, boxesToDelete, delFlagBool, foldInt, unfoldInt, openInt, polyLen, i, window))
+
+
+        polyEntry.pack(side = 'left', padx = 10)
+        polyButton.pack(side = 'left')
+        foldButton.pack(side = 'left')
+        openButton.pack(side='left')
+        unfoldButton.pack(side = 'left')
+        badButton.pack()
+        foldedFrame.pack()
+        polyFrame.pack()
+        backButton.pack()
+        resetButton.pack()
+        nextButton.pack(side = 'right')
+
+        # Outputs
+        output_label = ttk.Label(master = window, text = 'Folded', textvariable= outFold)
+        output_label1 = ttk.Label(master=window, text='Unfolded', textvariable=outunFold)
+        output_label2 = ttk.Label(master=window, text='Open', textvariable=outOpen)
+        output_label3 = ttk.Label(master=window, text='Polymer Count', textvariable=outLengths)
+        output_label4 = ttk.Label(master = window, text = 'Polymer List', textvariable=outLengthArray)
+        output_label5 = ttk.Label(master = window, text = 'Deletion', textvariable = delFlag)
+        output_label6 = ttk.Label(master = window, text = 'Deletion',  textvariable = boundingBoxSize)
+        output_label.pack()
+        output_label2.pack()
+        output_label1.pack()
+        output_label3.pack()
+        output_label4.pack()
+        output_label5.pack()
+        output_label6.pack()
+
+
+        # Image
+        cv.imwrite('Cropped.png', crop_img)
+        img = Image.open('Cropped.png')
+        img = ImageTk.PhotoImage(img)
+        image_label = tk.Label(window, image = img)
+        image_label.pack()
+        # Run Window
+        window.mainloop()
+
+
+def back(folded, individual, openCounter, allpolyLen, boxesToDelete, i, window, drawing, boundRect):
+    window.destroy()
+    ending = i + 1
+    start_for_back = i - 1
+    imageCropBACK(drawing, boundRect, folded, individual, allpolyLen, openCounter, boxesToDelete, start_for_back, ending)
 
 
 def next(folded, individual, openCounter, allpolyLen, boxesToDelete, delFlagBool, foldInt, unfoldInt, openInt, polyLen, i, window):
