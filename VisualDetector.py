@@ -174,7 +174,7 @@ def thresh_callback(thres):
 
     TOTALFOLD = tk.StringVar()
 
-    TOTALFOLD.set(f'TOTAL FOLDED: {str(sum(folded.values()))} \nTOTAL INDIVIDUAL: {sum(individual.values())}\nTOTAL OPEN: {sum(openCounter.values())}\nTOTAL MER: {sum([sum(i) for i in allPolyLen.values()])}')
+    TOTALFOLD.set(f'TOTAL CLOSED: {str(sum(folded.values()))} \nTOTAL OPEN: {sum(openCounter.values())}\nTOTAL INDIVIDUAL: {sum(individual.values())}\nTOTAL MER: {sum([sum(i) for i in allPolyLen.values()])}')
 
     title_label = ttk.Label(master=window, text='FINAL OUTPUT', font='Calibri 24')
     title_label.pack()
@@ -192,9 +192,9 @@ def thresh_callback(thres):
 
     window.mainloop()
 
-    print(f'TOTAL Folded: {sum(folded.values())}')
-    print(f'TOTAL Unfolded: {sum(individual.values())}')
+    print(f'TOTAL Closed: {sum(folded.values())}')
     print(f'TOTAL Open : {sum(openCounter.values())}')
+    print(f'TOTAL Individual: {sum(individual.values())}')
     print(f'TOTAL -mer: {sum([sum(i) for i in allPolyLen.values()])}')
 
 
@@ -213,16 +213,16 @@ def drawOnImage(contours, drawing, boundRect, folded, individual, openCounter, a
         else:
             multipleCounter = 0
             if folded[i] > 0:
-                color = (255, 0, 0)
+                color = (0, 255, 0)
                 multipleCounter += 1
             if individual[i] > 0:
-                color = (0, 255, 0)
+                color = (255, 255, 255)
                 multipleCounter += 1
             if openCounter[i] > 0:
                 color = (0, 0, 255)
                 multipleCounter += 1
             if len(allPolyLen[i]) > 0:
-                color = (255, 255, 255)
+                color = (255, 0, 0)
                 multipleCounter += 1
             if multipleCounter == 0:
                 color = (0, 0, 0)
@@ -282,9 +282,9 @@ def imageCrop(contours, drawing, boundRect, folded, individual, allpolyLen, open
 
         # Inputs
         foldedFrame = ttk.Frame(master = window)
-        foldButton = ttk.Button(master = foldedFrame, text = 'Add one folded', command = partial(count, foldInt, outFold, 'Folded Count: '))
-        unfoldButton = ttk.Button(master = foldedFrame, text = 'Add one unfolded', command = partial(count, unfoldInt, outunFold, 'Unfolded Count: '))
-        openButton = ttk.Button(master = foldedFrame, text = 'Add an open', command = partial(count, openInt, outOpen, 'Open Count: '))
+        foldButton = ttk.Button(master = foldedFrame, text = 'Add Closed', command = partial(count, foldInt, outFold, 'Closed Count: '))
+        unfoldButton = ttk.Button(master = foldedFrame, text = 'Add Individual', command = partial(count, unfoldInt, outunFold, 'Individual Count: '))
+        openButton = ttk.Button(master = foldedFrame, text = 'Add Open', command = partial(count, openInt, outOpen, 'Open Count: '))
         polyFrame = ttk.Frame(master = window)
         polyEntry = ttk.Entry(master = polyFrame, textvariable=merVar)
         polyButton = ttk.Button(master = polyFrame, text = 'Add #-mer', command = partial(polyLister, polyLen, polyInt, merVar, outLengthArray, outLengths))
@@ -296,8 +296,8 @@ def imageCrop(contours, drawing, boundRect, folded, individual, allpolyLen, open
         polyEntry.pack(side = 'left', padx = 10)
         polyButton.pack(side = 'left')
         foldButton.pack(side = 'left')
+        openButton.pack(side='left')
         unfoldButton.pack(side = 'left')
-        openButton.pack(side = 'left')
         badButton.pack()
         foldedFrame.pack()
         polyFrame.pack()
@@ -314,8 +314,8 @@ def imageCrop(contours, drawing, boundRect, folded, individual, allpolyLen, open
         output_label6 = ttk.Label(master = window, text = 'Deletion',  textvariable = boundingBoxSize)
 
         output_label.pack()
-        output_label1.pack()
         output_label2.pack()
+        output_label1.pack()
         output_label3.pack()
         output_label4.pack()
         output_label5.pack()
@@ -341,9 +341,9 @@ def next(folded, individual, openCounter, allpolyLen, boxesToDelete, delFlagBool
         allpolyLen[i] = polyLen
     else:
         boxesToDelete.append(i)
-    print(f'Updated Folded: {sum(folded.values())}')
-    print(f'Updated Unfolded: {sum(individual.values())}')
+    print(f'Updated Closed: {sum(folded.values())}')
     print(f'Updated Open : {sum(openCounter.values())}')
+    print(f'Updated Individual: {sum(individual.values())}')
     print(f'Updated -mer: {sum([sum(i) for i in allpolyLen.values()])}')
     print(f'Boxes to Delete: {boxesToDelete}')
 
