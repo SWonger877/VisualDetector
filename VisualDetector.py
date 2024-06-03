@@ -449,6 +449,8 @@ def next(folded, individual, openCounter, allpolyLen, boxesToDelete, delFlagBool
         individual[i] = unfoldInt.get()
         openCounter[i] = openInt.get()
         allpolyLen[i] = polyLen
+        if i in boxesToDelete:
+            boxesToDelete.remove(i)
     else:
         boxesToDelete.append(i)
     print(f'Updated Closed: {sum(folded.values())}')
