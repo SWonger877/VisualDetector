@@ -2,4 +2,4 @@ A program to give a GUI to help guide through the filtering of DNA Jacks used in
 
 Primiarily used for James Houston's PhD Research.
 
-GUI also incorporates OpenCV to detect jacks as well as estimate if it is properly folded, as well as the angle.
+GUI also incorporates OpenCV to detect jacks as well as estimate if it is properly folded, as well as the angle. Feature is currently unfinished.
